@@ -127,7 +127,8 @@ app.get('/index', (req, res) => {
 // Add new task
 app.post('/add', (req, res) => {
   const task = req.body.task;
-
+  const date=req.body.date;
+const desc=req.body.description;
   // const result = dval.check(task);
   // dval.check(task, (err, usertask) => {
   //   if (err) {
@@ -142,9 +143,9 @@ app.post('/add', (req, res) => {
   // });
   // console.log(result)
   // if(result){
-  const query = 'INSERT INTO tasks (task) VALUES (?)';
+  const query = 'INSERT INTO tasks (task,date,description) VALUES (?,?,?)';
 
-  db.query(query, [task], (err, result) => {
+  db.query(query, [task,date,desc], (err, result) => {
     if (err) {
       console.error('Error creating task: ', err);
       res.redirect('/');
