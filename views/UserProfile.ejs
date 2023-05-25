@@ -10,8 +10,9 @@
 </head>
 <body>
   <h2>Welcome </h2>
-  
-<form action="/display/<%= information.id %>" method="get">
+  <div class="form-group">
+<form action="/display" method="get">
+</div>
   <div class="form-group">
     <label for="fullname">Full name:</label>
     <input type="text" class="form-control" id="fullname" name="fullname" value="<%= information.fullname %>" readonly>
