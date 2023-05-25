@@ -8,16 +8,12 @@ const bcrypt =require("bcryptjs")
 const ejs = require('ejs');
 const app = express();
 
-
-// Database connection
-
-
 // Middleware
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({
-  secret: 'your_secret_key',
+  secret: "4",
   resave: true,
   saveUninitialized: true
 }));
@@ -30,7 +26,7 @@ app.get('/', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  
+  const id=req.body.id;
  
   if (!sign.validateBoth(email,password) ) {
     return res.render('login', { message: 'Please enter both email and password' });
@@ -46,6 +42,7 @@ app.post('/login', (req, res) => {
     } else {
       req.session.loggedIn = true;
       req.session.email = email;
+      req.session.id=4;
       res.redirect('/index');
     }
   });
@@ -89,6 +86,7 @@ app.post('/signup', async (req, res) => {
         }
         req.session.loggedIn = true;
         req.session.email = email;
+        
         res.redirect('/index');
       });
     }
@@ -177,16 +175,12 @@ app.post('/delete/:id', (req, res) => {
 });
 
 
-
-
-
-
 // Display user profile
 
 app.get('/UserProfile', (req, res) =>{
-  const id = req.params.id;
+  const id = req.session.id;
   const query = 'SELECT * FROM information WHERE id = ?';
-  db.query(query, [id], (err, results) => {
+  db.query(query, [4], (err, results) => {
     if (err) {
       console.error('Error display profile: ', err);
       res.render('index', { error: 'Failed to display profile', user: [] });
@@ -197,34 +191,23 @@ app.get('/UserProfile', (req, res) =>{
    
 })
 
-//Enabling Edit button in user profile
-
-app.post('/enableEdit/:id', (req, res) =>{
-  const id = req.params.id;
-  const query = 'SELECT * FROM information WHERE id = ?';
-  db.query(query, [id], (err, result) => {
-    if (err) {
-      console.error('Error editing user information: ', err);
-      res.redirect('/');
-      return;
-     }
-     res.redirect('/index', { editable: true 
-    });
-  });
-   
-})
-
 //save the updated profile
-app.post('/save/:id', (req, res) => {
+app.post('/UserProfile/:id', (req, res) => {
   const userId = req.params.id;
-  const { fullname, email } = req.body;
-  const sql = 'UPDATE information SET fullname = ?, email = ? WHERE id = ?';
-  db.query(sql, [fullname, email, userId], (err, result) => {
+  const  fullname = req.body.fullname;
+  const  email = req.body.email;
+  const  age = req.body.age;
+  const sql = 'UPDATE information SET fullname = ?, email = ? , age= ? WHERE id = ?';
+  db.query(sql, [fullname, email,age, userId], (err, result) => {
     if (err) {
       console.error('Error editing user information: ', err);
       res.redirect('/UserProfile');
       return;
      
+    }
+    else{
+
+      res.redirect('/index');
     }
   });
 });

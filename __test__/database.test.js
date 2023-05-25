@@ -65,4 +65,16 @@ describe('Test the database queries', () => {
       done();
     });
   });
+
+  it('should update the  user info from the database', (done) => {
+    const fullname='testuser';
+    const email="testuser@gmail.com";
+    const age= '23';
+    const id=4;
+    connection.query('UPDATE information SET fullname = ?, email = ? , age= ? WHERE id = ?', [fullname,email,age,id], (err, results) => {
+      if (err) throw err;
+      expect(results.affectedRows).toBe(1);
+      done();
+    });
+  });
 });
