@@ -4,16 +4,21 @@ const db= require("./database.js")
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const sign= require("./validate.js")
+const datab= require("./database_connect.js")
 const bcrypt =require("bcryptjs")
 const ejs = require('ejs');
 const app = express();
+
+
+// Database connection
+
 
 // Middleware
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({
-  secret: "4",
+  secret: 'your_secret_key',
   resave: true,
   saveUninitialized: true
 }));
@@ -23,30 +28,43 @@ app.get('/', (req, res) => {
   res.render('login', { message: '' });
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const id=req.body.id;
+  
  
   if (!sign.validateBoth(email,password) ) {
     return res.render('login', { message: 'Please enter both email and password' });
   }
+  try{
+    //const userId = await db(sql)
+    const login_result= await datab.login(email,password)
 
-  db.query('SELECT * FROM information WHERE email = ?', [email], async (err, results) => {
-    if (err) {
-      throw err;
-    }
-
-    if (results.length === 0 || !await bcrypt.compare(password, results[0].password)) {
+    console.log(login_result)
+    if (login_result==0){
       res.render('login', { message: 'Invalid email or password' });
-    } else {
+
+    }else{
       req.session.loggedIn = true;
       req.session.email = email;
-      req.session.id=4;
+      req.session.identify = login_result;
+      
+      console.log(req.session.identify)
       res.redirect('/index');
+      
     }
-  });
+   
+}
+catch(e){
+    console.error(e)
+    return res.status(500).send({
+        success: false,
+        message: 'internal server error'
+    })
+}
+  
 });
+
 
 app.get('/signup', (req, res) => {
   res.render('signup', { message: '' });
@@ -72,26 +90,31 @@ app.post('/signup', async (req, res) => {
    const hpassword= await sign.hash(password)
    console.log(hpassword)
   // console.log(sign.validateEmail(email))
-  db.query('SELECT * FROM information WHERE email = ?', [email], (err, results) => {
-    if (err) {
-      throw err;
-    }
-
-    if (results.length > 0) {
+  try{
+    //const userId = await db(sql)
+    const signupp= await datab.signup(fullname,email,password,age)
+    console.log(signupp)
+    if (signupp){
       res.render('signup', { message: 'email already exists' });
-    } else {
-      db.query('INSERT INTO information (fullname, email, password, age) VALUES (?, ?,?,?)', [fullname,email, hpassword,age], (err) => {
-        if (err) {
-          throw err;
-        }
-        req.session.loggedIn = true;
-        req.session.email = email;
-        
-        res.redirect('/index');
-      });
+
+    }else{
+      req.session.loggedIn = true;
+      req.session.email = email;
+      res.redirect('/index');
     }
-  });
+   
+}
+catch(e){
+    console.error(e)
+    return res.status(500).send({
+        success: false,
+        message: 'internal server error'
+    })
+}
+  
+   
 });
+
 
 // app.get('/index', (req, res) => {
   
@@ -109,10 +132,10 @@ app.get('/index', (req, res) => {
   // } else {
   //   res.render('index', { email: req.session.email });
   // }
-  const query = 'SELECT * FROM tasks';
+  const query = 'SELECT * FROM tasks WHERE user_id = ?';
    
  
-  db.query(query, (err, results) => {
+  db.query(query,[req.session.identify] ,(err, results) => {
     if (err) {
       console.error('Error retrieving tasks: ', err);
       res.render('index', { error: 'Failed to retrieve tasks', tasks: [] });
@@ -123,10 +146,11 @@ app.get('/index', (req, res) => {
 });
 
 // Add new task
-app.post('/add', (req, res) => {
+app.post('/add', async (req, res) => {
   const task = req.body.task;
   const date=req.body.date;
 const desc=req.body.description;
+
   // const result = dval.check(task);
   // dval.check(task, (err, usertask) => {
   //   if (err) {
@@ -141,16 +165,31 @@ const desc=req.body.description;
   // });
   // console.log(result)
   // if(result){
-  const query = 'INSERT INTO tasks (task,date,description) VALUES (?,?,?)';
+    try{
+      //const userId = await db(sql)
+      const add= await datab.addTask(task,date,desc,req.session.identify)
+      console.log(add)
+      if (add){
+        
+        res.redirect('/index');
+  
+      }else{
+        res.render('index', { message: 'Error creating task. Try again' });
+      //console.error('Error creating task. Try again: ', err);
+      res.redirect('/index');
+      }
+     
+  }
+  catch(e){
+      console.error(e)
+      return res.status(500).send({
+          success: false,
+          message: 'internal server error'
+      })
+  }
+    
 
-  db.query(query, [task,date,desc], (err, result) => {
-    if (err) {
-      console.error('Error creating task: ', err);
-      res.redirect('/');
-      return;
-    }
-    res.redirect('/index');
-  });
+    
 // }else {
   //return res.render('index', { message: 'this task is already registered' });
   // res.redirect('/index');
@@ -158,22 +197,73 @@ const desc=req.body.description;
 
 // }
 });
-
-// Delete task
-app.post('/delete/:id', (req, res) => {
-  const id = req.params.id;
-  const query = 'DELETE FROM tasks WHERE id = ?';
-
-  db.query(query, [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting task: ', err);
-      res.redirect('/index');
-      return;
-    }
+//edit task
+app.post('/edit', async(req, res) => {
+  const ntask = req.body.ntask;
+  const date=req.body.date;
+const desc=req.body.description;
+const otask = req.body.otask;
+try{
+  //const userId = await db(sql)
+  const edit= await datab.editTask(ntask,date,desc,otask,req.session.identify)
+  console.log(edit)
+  if (edit){
+    
     res.redirect('/index');
-  });
+
+  }else{
+    //res.render('index', { message: 'Error editing task. Try again' });
+    //res.render('Error editing task');
+    res.redirect('/index');
+  }
+ 
+}
+catch(e){
+  console.error(e)
+  return res.status(500).send({
+      success: false,
+      message: 'internal server error'
+  })
+}
+  // const result = dval.check(task);
+  // dval.check(task, (err, usertask) => {
+  //   if (err) {
+  //     res.status(500).send('Internal Server Error');
+  //     return;
+  //   }
+
+  //   // Send the user information back to the calling page
+  //   if (!usertask) {
+  //     return res.render('this task is already added');
+  //   }
+  // });
+  // console.log(result)
+  // if(result){
+  
+// }else {
+  //return res.render('index', { message: 'this task is already registered' });
+  // res.redirect('/index');
+  
+
+// }
+});
+// Delete task
+app.post('/delete/:id', async (req, res) => {
+  const id = req.params.id;
+  const deleted= await datab.deleteTask(id)
+  if(deleted){
+    res.redirect('/index');
+
+  }else{
+    console.error('Error deleting task: ');
+
+      res.redirect('/index');
+  }
 });
 
+
+
+// Display user profile
 
 // Display user profile
 
@@ -212,6 +302,6 @@ app.post('/UserProfile/:id', (req, res) => {
   });
 });
 
-app.listen(3000, () => {
+app.listen(5000, () => {
   console.log('Server started on port 3000');
 });
