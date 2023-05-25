@@ -176,8 +176,59 @@ app.post('/delete/:id', (req, res) => {
   });
 });
 
+
+
+
+
+
+// Display user profile
+
+app.get('/UserProfile', (req, res) =>{
+  const id = req.params.id;
+  const query = 'SELECT * FROM information WHERE id = ?';
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error('Error display profile: ', err);
+      res.render('index', { error: 'Failed to display profile', user: [] });
+      return;
+    }
+    res.render('UserProfile', { user: results });
+  });
+   
+})
+
+//Enabling Edit button in user profile
+
+app.post('/enableEdit/:id', (req, res) =>{
+  const id = req.params.id;
+  const query = 'SELECT * FROM information WHERE id = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error('Error editing user information: ', err);
+      res.redirect('/');
+      return;
+     }
+     res.redirect('/index', { editable: true 
+    });
+  });
+   
+})
+
+//save the updated profile
+app.post('/save/:id', (req, res) => {
+  const userId = req.params.id;
+  const { fullname, email } = req.body;
+  const sql = 'UPDATE information SET fullname = ?, email = ? WHERE id = ?';
+  db.query(sql, [fullname, email, userId], (err, result) => {
+    if (err) {
+      console.error('Error editing user information: ', err);
+      res.redirect('/UserProfile');
+      return;
+     
+    }
+  });
+});
+
 app.listen(3000, () => {
   console.log('Server started on port 3000');
 });
-
-// Helper functions
