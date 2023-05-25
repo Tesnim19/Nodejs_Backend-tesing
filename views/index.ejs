@@ -69,6 +69,39 @@ height: 100vh;">
         </div>
       </div>
     </form>
+<!-- edit form -->
+
+    <form class="modal fade"  action="/edit" method="post" id="form1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Edit Task</h5>
+           
+          </div>
+          <div class="modal-body">
+            <p>Old Task Title</p>
+            <input type="text" name="otask" placeholder="old task" required>
+            <div id="msg"></div>
+            <br>
+            <p>New Task Title</p>
+            <input type="text" name="ntask" placeholder="new task" required>
+            <div id="msg"></div>
+            <br>
+            <p>Due Date</p>
+            <input type="date" name="date" class="form-control" name="" id="dateInput">
+            <br>
+            <p>Description</p>
+            <textarea name="description" class="form-control" id="textarea" cols="30" rows="5"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" id="add" class="btn btn-primary">Add</button>
+          </div>
+        </div>
+      </div>
+    </form>
+   
+          
 
     <h5 >Tasks</h5>
     <!-- //class="text-center my-3" -->
@@ -109,7 +142,11 @@ height: 100vh;">
               <p><%= task.description %></p>
                 
                 <form style="justify-self: right;vertical-align:bottom;text-align: right;" action="/delete/<%= task.id %>" method="post" class="delete-form">
-                  <button>  <i class='fas fa-pencil-alt' style='font-size:20px;color:rgb(38, 0, 255)'></i></button>
+                  <div  id="edit" data-bs-toggle="modal" data-bs-target="#form1" >
+            
+                    <i class='fas fa-pencil-alt' style='font-size:20px;color:rgb(38, 0, 255)'></i>
+                  </div>
+                 
                   <button type="submit"> <i class='fas fa-trash-alt' style='font-size:20px;color:red'></i></button>
                 </form>
    

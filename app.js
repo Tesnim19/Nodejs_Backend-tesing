@@ -46,6 +46,8 @@ app.post('/login', (req, res) => {
     } else {
       req.session.loggedIn = true;
       req.session.email = email;
+      req.session.identify= results[0].id
+      //console.log(req.session.identify)
       res.redirect('/index');
     }
   });
@@ -89,6 +91,7 @@ app.post('/signup', async (req, res) => {
         }
         req.session.loggedIn = true;
         req.session.email = email;
+
         res.redirect('/index');
       });
     }
@@ -111,10 +114,10 @@ app.get('/index', (req, res) => {
   // } else {
   //   res.render('index', { email: req.session.email });
   // }
-  const query = 'SELECT * FROM tasks';
+  const query = 'SELECT * FROM tasks WHERE user_id = ?';
    
  
-  db.query(query, (err, results) => {
+  db.query(query,[req.session.identify] ,(err, results) => {
     if (err) {
       console.error('Error retrieving tasks: ', err);
       res.render('index', { error: 'Failed to retrieve tasks', tasks: [] });
@@ -129,6 +132,7 @@ app.post('/add', (req, res) => {
   const task = req.body.task;
   const date=req.body.date;
 const desc=req.body.description;
+
   // const result = dval.check(task);
   // dval.check(task, (err, usertask) => {
   //   if (err) {
@@ -143,9 +147,9 @@ const desc=req.body.description;
   // });
   // console.log(result)
   // if(result){
-  const query = 'INSERT INTO tasks (task,date,description) VALUES (?,?,?)';
+  const query = 'INSERT INTO tasks (task,date,description,user_id) VALUES (?,?,?,?)';
 
-  db.query(query, [task,date,desc], (err, result) => {
+  db.query(query, [task,date,desc,req.session.identify], (err, result) => {
     if (err) {
       console.error('Error creating task: ', err);
       res.redirect('/');
@@ -160,7 +164,43 @@ const desc=req.body.description;
 
 // }
 });
+//edit task
+app.post('/edit', (req, res) => {
+  const ntask = req.body.ntask;
+  const date=req.body.date;
+const desc=req.body.description;
+const otask = req.body.otask;
+  // const result = dval.check(task);
+  // dval.check(task, (err, usertask) => {
+  //   if (err) {
+  //     res.status(500).send('Internal Server Error');
+  //     return;
+  //   }
 
+  //   // Send the user information back to the calling page
+  //   if (!usertask) {
+  //     return res.render('this task is already added');
+  //   }
+  // });
+  // console.log(result)
+  // if(result){
+  const query = 'UPDATE tasks SET task = ?, date = ? ,description=? WHERE task = ? ';
+
+  db.query(query, [ntask,date,desc,otask], (err, result) => {
+    if (err) {
+      console.error('Error creating task: ', err);
+      res.redirect('/');
+      return;
+    }
+    res.redirect('/index');
+  });
+// }else {
+  //return res.render('index', { message: 'this task is already registered' });
+  // res.redirect('/index');
+  
+
+// }
+});
 // Delete task
 app.post('/delete/:id', (req, res) => {
   const id = req.params.id;

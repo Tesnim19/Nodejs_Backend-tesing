@@ -39,8 +39,8 @@ describe('Test the database queries', () => {
   });
 
   it('should insert a new task for the user into the database', (done) => {
-    const task = { task: 'Test Task' };
-    connection.query('INSERT INTO tasks SET ?', task, (err, results) => {
+    const tasks = { task: 'Test Task' , date:'03/20/2023', desc: 'new test task', id:'4'};
+    connection.query('INSERT INTO tasks SET ?',tasks, (err, results) => {
       if (err) throw err;
       taskId = results.insertId;
       expect(results.affectedRows).toBe(1);
@@ -50,6 +50,7 @@ describe('Test the database queries', () => {
 
   
 
+  
   it('should delete the created task from the database', (done) => {
     connection.query('DELETE FROM tasks WHERE id = ? ', [taskId], (err, results) => {
       if (err) throw err;
@@ -58,8 +59,13 @@ describe('Test the database queries', () => {
     });
   });
 
-  it('should delete the created user from the database', (done) => {
-    connection.query('DELETE FROM information WHERE id = ?', [userId], (err, results) => {
+  
+
+ 
+
+  it('should update task', (done) => {
+    const updateTask = { ntask: 'Test Task', date:'03/20/2023', desc: 'new test task', tid:'19' };
+    connection.query('UPDATE tasks SET task = ?, date = ? ,description=? WHERE id = ? ',  [updateTask], (err, results) => {
       if (err) throw err;
       expect(results.affectedRows).toBe(1);
       done();
