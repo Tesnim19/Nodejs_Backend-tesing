@@ -1,0 +1,57 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <link href="C:/Users/AA/Documents/newSquat\Nodejs_Backend-tesing/user.css" rel="stylesheet">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+      <title>update profile</title>
+      <style>
+        body{
+    background-image: -moz-radial-gradient();
+    background-color: rgb(115, 121, 121);
+  }
+  .body {
+      margin-top: auto;
+      padding: 50px;
+    }
+      </style>
+  </head>
+  <body >
+  <div class="body">
+    <div class="container" style="background-color: rgb(211, 223, 225);  padding: 25px;">
+    <h2>Update Profile </h2>
+    <% user.forEach(function(user){ %>
+     
+   
+  <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+  </svg>
+  <form action="/UserProfile/:<%user.id%>" method="post">
+    <div class="form-group">
+      <label for="fullname">Full name:</label>
+      <input type="text" class="form-control" id="fullname" name="fullname" value="<%= user.fullname %>" >
+    </div>
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" >
+    </div>
+    <div class="form-group">
+      <label for="password">Age:</label>
+      <input type="number" class="form-control" id="age" name="age" value="<%= user.age%>" >
+    </div>
+      <div class="form-group">
+        <button type="submit" class="btn btn-success" id="save-profile"  >Save Profile</button>  
+      </div>
+  </form>
+    </div>
+
+    <% }) %> 
+  </div>
+
+  </body>
+  </html>
